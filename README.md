@@ -1,7 +1,8 @@
 # cortextual
 
 yet another context and memory system for AI agents, but we're
-- hand crafted, which means no vibe coded slop, all code, all bytes, every char is typed out by a human and written by hand
+- hand crafted, no vibe coded slop, all code, all bytes, every char is typed out by a human and written by hand
+- clankers are only used for guidance, brainstorming, and design triage, but all results are acted upon materially by a human once again
 - built in Rust
 - built for personal use
 
