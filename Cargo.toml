@@ -12,6 +12,7 @@ readme = "README.md"
 authors = ["bkataru <baalateja.k@gmail.com>"]
 
 [dependencies]
+thiserror = "2.0.21"
 
 [lints.rust]
 unsafe_code = "deny"
