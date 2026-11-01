@@ -13,6 +13,7 @@ authors = ["bkataru <baalateja.k@gmail.com>"]
 
 [dependencies]
 thiserror = "2.0.21"
+uuid = { version = "1.29.0", features = ["v7"] }
 
 [lints.rust]
 unsafe_code = "deny"
