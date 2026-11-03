@@ -5,5 +5,7 @@
 //! few small crates.
 
 pub mod ids;
+pub mod time;
 
 pub use ids::{EntityId, EpisodeId, Id, IdTag, MemoryId};
+pub use time::{Interval, Timestamp};

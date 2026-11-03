@@ -26,6 +26,10 @@ pub enum Error {
     /// A timestamp is out of range, or arithmetic on it overflowed.
     #[error("invalid timestamp: {0}")]
     InvalidTimestamp(String),
+
+    /// An interval's start is after its end.
+    #[error("invalid interval: {0}")]
+    InvalidInterval(String),
 }
 
 /// Crate-wide result type.
@@ -67,6 +71,10 @@ mod tests {
         assert_eq!(
             Error::InvalidTimestamp("overflow".to_owned()).to_string(),
             "invalid timestamp: overflow"
+        );
+        assert_eq!(
+            Error::InvalidInterval("start after end".to_owned()).to_string(),
+            "invalid interval: start after end"
         );
     }
 
