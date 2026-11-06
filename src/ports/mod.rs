@@ -11,6 +11,8 @@
 
 pub mod clock;
 pub mod embedder;
+pub mod tokenizer;
 
 pub use clock::{Clock, SystemClock};
 pub use embedder::{Embedder, EmbeddingBatch, InputKind};
+pub use tokenizer::{Accuracy, HeuristicTokenizer, Tokenizer};
