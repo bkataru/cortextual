@@ -10,5 +10,7 @@
 //! Layering: `ports` may use `types`, never the reverse.
 
 pub mod clock;
+pub mod embedder;
 
 pub use clock::{Clock, SystemClock};
+pub use embedder::{Embedder, EmbeddingBatch, InputKind};

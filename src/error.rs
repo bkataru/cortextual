@@ -1,4 +1,5 @@
 //! Error type for the whole crate.
+
 use thiserror::Error;
 
 /// Everything that can go wrong in contextrual.
@@ -30,6 +31,27 @@ pub enum Error {
     /// An interval's start is after its end.
     #[error("invalid interval: {0}")]
     InvalidInterval(String),
+
+    /// An embedding failed validation: wrong shape, non-finite values, or a
+    /// vector that cannot be normalized.
+    #[error("invalid embedding: {0}")]
+    InvalidEmbedding(String),
+
+    /// An embedder adapter failed, for example on a network error or a
+    /// missing model file. The underlying error is available through
+    /// [`std::error::Error::source`].
+    #[error("embedder failed")]
+    Embedder(#[source] Box<dyn std::error::Error + Send + Sync>),
+}
+
+impl Error {
+    /// Wraps a failure from an embedder adapter.
+    ///
+    /// Accepts anything convertible into a boxed error: a `&str`, a `String`,
+    /// or any error type that is `Send + Sync + 'static`.
+    pub fn embedder(source: impl Into<Box<dyn std::error::Error + Send + Sync>>) -> Self {
+        Self::Embedder(source.into())
+    }
 }
 
 /// Crate-wide result type.
@@ -76,6 +98,19 @@ mod tests {
             Error::InvalidInterval("start after end".to_owned()).to_string(),
             "invalid interval: start after end"
         );
+        assert_eq!(
+            Error::InvalidEmbedding("zero vector".to_owned()).to_string(),
+            "invalid embedding: zero vector"
+        );
+    }
+
+    #[test]
+    fn embedder_error_keeps_its_source() {
+        use std::error::Error as _;
+
+        let err = Error::embedder("model file missing");
+        assert_eq!(err.to_string(), "embedder failed");
+        assert_eq!(err.source().unwrap().to_string(), "model file missing");
     }
 
     #[test]
