@@ -37,6 +37,11 @@ pub enum Error {
     #[error("invalid embedding: {0}")]
     InvalidEmbedding(String),
 
+    /// An episode failed validation: empty or oversized content, or an
+    /// unknown kind.
+    #[error("invalid episode: {0}")]
+    InvalidEpisode(String),
+
     /// An embedder adapter failed, for example on a network error or a
     /// missing model file. The underlying error is available through
     /// [`std::error::Error::source`].
@@ -101,6 +106,10 @@ mod tests {
         assert_eq!(
             Error::InvalidEmbedding("zero vector".to_owned()).to_string(),
             "invalid embedding: zero vector"
+        );
+        assert_eq!(
+            Error::InvalidEpisode("content must not be empty".to_owned()).to_string(),
+            "invalid episode: content must not be empty"
         );
     }
 
