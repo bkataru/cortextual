@@ -8,10 +8,13 @@ pub mod content_hash;
 pub mod episode;
 pub mod ids;
 pub mod scope;
+mod string_enum;
 pub mod time;
+pub mod trust;
 
 pub use content_hash::ContentHash;
 pub use episode::{Episode, EpisodeKind, NewEpisode};
 pub use ids::{EntityId, EpisodeId, Id, IdTag, MemoryId};
 pub use scope::{AgentId, Scope, SessionId, TenantId, UserId};
 pub use time::{Interval, Timestamp};
+pub use trust::Trust;

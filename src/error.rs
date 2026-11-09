@@ -42,6 +42,11 @@ pub enum Error {
     #[error("invalid episode: {0}")]
     InvalidEpisode(String),
 
+    /// A memory, or something about one such as its trust level or status,
+    /// failed validation.
+    #[error("invalid memory: {0}")]
+    InvalidMemory(String),
+
     /// An embedder adapter failed, for example on a network error or a
     /// missing model file. The underlying error is available through
     /// [`std::error::Error::source`].
@@ -110,6 +115,10 @@ mod tests {
         assert_eq!(
             Error::InvalidEpisode("content must not be empty".to_owned()).to_string(),
             "invalid episode: content must not be empty"
+        );
+        assert_eq!(
+            Error::InvalidMemory("unknown trust level \"root\"".to_owned()).to_string(),
+            "invalid memory: unknown trust level \"root\""
         );
     }
 
