@@ -26,7 +26,7 @@ fn fnv1a(bytes: &[u8]) -> u64 {
 /// It uses the hashing trick. Text is split into lowercase words, and each
 /// word is hashed to one of `dim` buckets with a pseudo-random sign. The
 /// bucket values are summed, and the row is normalized by
-/// [`EmbeddingBatch`](crate::ports::EmbeddingBatch).
+/// [`EmbeddingBatch`].
 ///
 /// The result behaves like a (crude) embedding model in the ways retrieval
 /// tests care about:

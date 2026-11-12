@@ -66,7 +66,7 @@ impl Error {
 
 /// Crate-wide result type.
 ///
-/// The second parameter defaults to [`Error`]. so `Result<T>` means
+/// The second parameter defaults to [`Error`](enum@Error). so `Result<T>` means
 /// `Result<T, cortextual::Error>`; and `Result<T, OtherError>` still works.
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
