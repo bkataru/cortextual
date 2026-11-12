@@ -659,8 +659,8 @@ mod tests {
                 .trust()
         };
 
-        assert_eq!(trust_of([user.clone()].as_ref()), Trust::User);
-        assert_eq!(trust_of([document.clone()].as_ref()), Trust::External);
+        assert_eq!(trust_of(std::slice::from_ref(&user)), Trust::User);
+        assert_eq!(trust_of(std::slice::from_ref(&document)), Trust::External);
         assert_eq!(trust_of([user, document].as_ref()), Trust::External);
     }
 
@@ -683,7 +683,7 @@ mod tests {
                 scope(key),
                 MemoryKind::Semantic,
                 "fact",
-                [source.clone()].as_ref(),
+                std::slice::from_ref(source),
             )
         };
 

@@ -60,11 +60,30 @@ impl ManualClock {
         self.update(|now| now.saturating_sub(delta));
     }
 
+    // TODO: decide between which update function to keep, the commented one just below or the variant after it
+    // fn update(&self, change: impl Fn(i64) -> i64) {
+    //     // The closure always returns `Some`, so this update cannot fail.
+    //     let _ = self
+    //         .micros
+    //         .try_update(Ordering::SeqCst, Ordering::SeqCst, |now| Some(change(now)));
+    // }
+
+    /// Applies `change` atomically: read, compute, and swap in the result,
+    /// retrying if another thread got there first.
     fn update(&self, change: impl Fn(i64) -> i64) {
-        // The closure always returns `Some`, so this update cannot fail.
-        let _ = self
-            .micros
-            .try_update(Ordering::SeqCst, Ordering::SeqCst, |now| Some(change(now)));
+        let mut current = self.micros.load(Ordering::SeqCst);
+        loop {
+            let next = change(current);
+            match self.micros.compare_exchange_weak(
+                current,
+                next,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            ) {
+                Ok(_) => return,
+                Err(actual) => current = actual,
+            }
+        }
     }
 }
 
