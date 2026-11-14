@@ -6,6 +6,7 @@
 
 pub mod error;
 pub mod ports;
+pub mod store;
 pub mod testing;
 pub mod types;
 

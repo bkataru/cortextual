@@ -16,13 +16,15 @@
 //! ```
 //!  use cortextual::types::{EpisodeId, EpisodeKind, NewEpisode, Scope, Timestamp};
 //!
-//!  let scope: Scope = "acme/alice//".parse().unwrap();
-//!  let draft = NewEpisode::new(scope, EpisodeKind::UserMessage, "remember the milk").
+//!  fn main() {
+//!      let scope: Scope = "acme/alice//".parse().unwrap();
+//!      let draft = NewEpisode::new(scope, EpisodeKind::UserMessage, "remember the milk").unwrap();
 //!
-//!  let now = Timestamp::from_secs(1_700_000_000).unwrap();
-//!  let episode = draft.into_episode(EpisodeId::generate_at(now).unwrap(), now);
-//!  assert_eq!(episode.content(), "remember the milk");
-//!  assert_eq!(episode.ingested_at(), now);
+//!      let now = Timestamp::from_secs(1_700_000_000).unwrap();
+//!      let episode = draft.into_episode(EpisodeId::generate_at(now).unwrap(), now);
+//!      assert_eq!(episode.content(), "remember the milk");
+//!      assert_eq!(episode.ingested_at(), now);
+//!  }
 //! ```
 
 use std::fmt;

@@ -52,6 +52,17 @@ pub enum Error {
     /// [`std::error::Error::source`].
     #[error("embedder failed")]
     Embedder(#[source] Box<dyn std::error::Error + Send + Sync>),
+
+    /// The storage layer failed: a database could not be opened, or a query
+    /// or write was rejected. The underlying error is available through
+    /// [`std::error::Error::source`].
+    #[error("storage failed")]
+    Storage(#[source] Box<dyn std::error::Error + Send + Sync>),
+
+    /// The database file cannot be used by this build: it is not a cortextual
+    /// database, or it was written by a newer version.
+    #[error("incompatible database: {0}")]
+    IncompatibleDatabase(String),
 }
 
 impl Error {
@@ -61,6 +72,15 @@ impl Error {
     /// or any error type that is `Send + Sync + 'static`.
     pub fn embedder(source: impl Into<Box<dyn std::error::Error + Send + Sync>>) -> Self {
         Self::Embedder(source.into())
+    }
+
+    /// Wraps a failure from the storage layer.
+    ///
+    /// Accepts anything convertible into a boxed error, so callers write
+    /// `.map_err(Error::storage)` without this crate exposing the database
+    /// library's own error type.
+    pub fn storage(source: impl Into<Box<dyn std::error::Error + Send + Sync>>) -> Self {
+        Self::Storage(source.into())
     }
 }
 
@@ -120,6 +140,10 @@ mod tests {
             Error::InvalidMemory("unknown trust level \"root\"".to_owned()).to_string(),
             "invalid memory: unknown trust level \"root\""
         );
+        assert_eq!(
+            Error::IncompatibleDatabase("schema is newer".to_owned()).to_string(),
+            "incompatible database: schema is newer"
+        );
     }
 
     #[test]
@@ -129,6 +153,15 @@ mod tests {
         let err = Error::embedder("model file missing");
         assert_eq!(err.to_string(), "embedder failed");
         assert_eq!(err.source().unwrap().to_string(), "model file missing");
+    }
+
+    #[test]
+    fn storage_error_keeps_its_source() {
+        use std::error::Error as _;
+
+        let err = Error::storage("disk is full");
+        assert_eq!(err.to_string(), "storage failed");
+        assert_eq!(err.source().unwrap().to_string(), "disk is full");
     }
 
     #[test]
