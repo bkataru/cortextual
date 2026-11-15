@@ -19,6 +19,8 @@
 //!   files that are not its own.
 
 mod migrate;
+#[cfg(test)]
+mod schema_tests;
 mod sqlite;
 
 pub use sqlite::SqliteStore;
