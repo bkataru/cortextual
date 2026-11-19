@@ -18,6 +18,8 @@
 //!   stamped with an application id, so cortextual refuses to open SQLite
 //!   files that are not its own.
 
+mod codec;
+mod episodes;
 mod migrate;
 #[cfg(test)]
 mod schema_tests;

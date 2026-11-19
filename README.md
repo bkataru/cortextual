@@ -28,6 +28,8 @@ Full design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ## Build
 
 ```shell
+$ cargo fmt --check
+$ cargo clippy --all-targets -- -D warnings
 $ cargo test
 ```
 

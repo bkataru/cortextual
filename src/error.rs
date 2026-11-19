@@ -2,10 +2,10 @@
 
 use thiserror::Error;
 
-/// Everything that can go wrong in contextrual.
+/// Everything that can go wrong in contextual
 ///
-/// This enum is `#[non_exhaustive]`: new variants will be added as
-/// needed, and consuming `match` expressions must include a wildcard arm.
+/// This enum is `#[non_exhaustive]`: new variants will be added as needed
+/// as the crate grows, and downstream, consuming `match` expressions must include a wildcard arm.
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
@@ -63,6 +63,11 @@ pub enum Error {
     /// database, or it was written by a newer version.
     #[error("incompatible database: {0}")]
     IncompatibleDatabase(String),
+
+    /// Stored data failed an invariant check when read back, such as a
+    /// mismatched content hash, an invalid id, or an out-of-range score.
+    #[error("corrupt data in store: {0}")]
+    CorruptData(String),
 }
 
 impl Error {
@@ -143,6 +148,10 @@ mod tests {
         assert_eq!(
             Error::IncompatibleDatabase("schema is newer".to_owned()).to_string(),
             "incompatible database: schema is newer"
+        );
+        assert_eq!(
+            Error::CorruptData("episode hash mismatch".to_owned()).to_string(),
+            "corrupt data in store: episode hash mismatch"
         );
     }
 

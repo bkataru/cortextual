@@ -203,6 +203,46 @@ impl Episode {
     /// Longer material should be split into chunks before ingestion.
     pub const MAX_CONTENT_BYTES: usize = 1 << 20;
 
+    /// Reconstructs an [`Episode`] from stored parts and re-verifies its
+    /// invariants.
+    ///
+    /// Unlike [`NewEpisode::into_episode`], which computes the content hash,
+    /// this checks that `content` still passes validation and that its digest
+    /// matches the stored `content_hash`. That turns silent database corruption
+    /// or manual edits into an error on read.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::CorruptData`] if `content` fails validation or if
+    /// `content_hash` does not match the digest of `content`.
+    pub fn restore(
+        id: EpisodeId,
+        scope: Scope,
+        kind: EpisodeKind,
+        content: String,
+        content_hash: ContentHash,
+        occurred_at: Timestamp,
+        ingested_at: Timestamp,
+    ) -> Result<Self> {
+        validate_content(&content)
+            .map_err(|err| Error::CorruptData(format!("episode {id}: {err}")))?;
+        let computed = ContentHash::of(&content);
+        if computed != content_hash {
+            return Err(Error::CorruptData(format!(
+                "episode {id} content hash mismatch: stored {content_hash}, computed {computed}"
+            )));
+        }
+        Ok(Self {
+            id,
+            scope,
+            kind,
+            content,
+            occurred_at,
+            ingested_at,
+            content_hash,
+        })
+    }
+
     /// The episode's id.
     pub fn id(&self) -> EpisodeId {
         self.id
@@ -373,5 +413,65 @@ mod tests {
         assert_eq!(d.scope(), &scope("acme/alice//"));
         assert_eq!(d.kind(), EpisodeKind::UserMessage);
         assert_eq!(d.content(), "hello");
+    }
+
+    #[test]
+    fn restore_round_trips_a_valid_episode() {
+        let now = secs(1_700_000_000);
+        let original = draft("remember the milk")
+            .with_occurred_at(secs(1_699_999_000))
+            .into_episode(EpisodeId::generate_at(now).unwrap(), now);
+
+        let restored = Episode::restore(
+            original.id(),
+            original.scope().clone(),
+            original.kind(),
+            original.content().to_owned(),
+            original.content_hash(),
+            original.occurred_at(),
+            original.ingested_at(),
+        )
+        .unwrap();
+        assert_eq!(restored, original);
+    }
+
+    #[test]
+    fn restore_rejects_a_mismatched_content_hash() {
+        let now = secs(1_700_000_000);
+        let id = EpisodeId::generate_at(now).unwrap();
+        let err = Episode::restore(
+            id,
+            scope("acme/alice//"),
+            EpisodeKind::UserMessage,
+            "remember the milk".to_owned(),
+            ContentHash::of("something else"),
+            now,
+            now,
+        )
+        .unwrap_err();
+        assert!(matches!(err, Error::CorruptData(_)), "{err}");
+        assert!(err.to_string().contains("content hash mismatch"), "{err}");
+    }
+
+    #[test]
+    fn restore_rejects_invalid_content_even_with_a_matching_hash() {
+        let now = secs(1_700_000_000);
+        let id = EpisodeId::generate_at(now).unwrap();
+        let oversized = "x".repeat(Episode::MAX_CONTENT_BYTES + 1);
+
+        for bad in [String::new(), "   \n\t".to_owned(), oversized] {
+            let hash = ContentHash::of(&bad);
+            let err = Episode::restore(
+                id,
+                scope("acme/alice//"),
+                EpisodeKind::Document,
+                bad,
+                hash,
+                now,
+                now,
+            )
+            .unwrap_err();
+            assert!(matches!(err, Error::CorruptData(_)), "{err}");
+        }
     }
 }

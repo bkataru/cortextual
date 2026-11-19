@@ -169,7 +169,7 @@ impl<K: IdTag> Id<K> {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidId`] if the lisce is not exactly 16 bytes long.
+    /// Returns [`Error::InvalidId`] if the slice is not exactly 16 bytes long.
     pub fn from_slice(bytes: &[u8]) -> Result<Self> {
         Uuid::from_slice(bytes)
             .map(Self::from_uuid)

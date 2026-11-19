@@ -20,9 +20,29 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// The store owns one database connection and the [`Clock`] it uses to stamp
 /// what it records. It is `Send` but not `Sync`: one thread uses it at a time.
 /// To share it between threads, wrap it in a `Mutex`.
+///
+/// ```
+/// use std::sync::Arc;
+///
+/// use cortextual::ports::Clock;
+/// use cortextual::store::SqliteStore;
+/// use cortextual::testing::ManualClock;
+/// use cortextual::types::{EpisodeKind, NewEpisode, Scope, Timestamp};
+///
+/// let clock: Arc<dyn Clock> = Arc::new(ManualClock::new(Timestamp::from_secs(1_000).unwrap()));
+/// let mut store = SqliteStore::open_in_memory(clock).unwrap();
+/// let scope: Scope = "acme/alice//".parse().unwrap();
+///
+/// let draft = NewEpisode::new(scope.clone(), EpisodeKind::UserMessage, "remember the milk")
+///     .unwrap();
+/// let saved = store.append_episode(draft).unwrap();
+///
+/// assert_eq!(store.get_episode(&scope, saved.id()).unwrap(), Some(saved.clone()));
+/// assert_eq!(store.recent_episodes(&scope, 10).unwrap(), vec![saved]);
+/// ```
 pub struct SqliteStore {
-    conn: Connection,
-    clock: Arc<dyn Clock>,
+    pub(super) conn: Connection,
+    pub(super) clock: Arc<dyn Clock>,
 }
 
 impl SqliteStore {
